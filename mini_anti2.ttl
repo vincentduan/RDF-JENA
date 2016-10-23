@@ -1,0 +1,132 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix map:     <http://dbpedia.org/#> .
+@prefix db:      <http://dbpedia.org/> .
+
+
+@prefix resource:   <http://dbpedia.org/resource/> .
+@prefix vocab:   <http://dbpedia.org/ontology/> .
+
+<http://dbpedia.org/resource/23>
+      a       vocab:group ;
+      vocab:allied <http://dbpedia.org/resource/13> ;
+      vocab:主要事件数目 12 ;
+      vocab:使命及关注点 "Rid the Muslim world of foreign influence and establish a Shariah-based Islamic government." ;
+      vocab:其他意识形态 """Islamist;
+Sunni;""" ;
+      vocab:总部所在国家 "Afghanistan" ;
+      vocab:成立时间 "1988-08-11"^^xsd:date ;
+      rdfs:label "基地组织"@en ;
+      vocab:组织作战方式 "Suicide bombings,IEDs,rocket,small arms attacks,grenades,kidnappinghostage-taking,ransoms,hijackings, propaganda." ;
+      vocab:组织名称 "Al Qaeda" ;
+      vocab:实施袭击 <http://dbpedia.org/resource/200109110007> , <http://dbpedia.org/resource/200109110006> , <http://dbpedia.org/resource/200109110005> , <http://dbpedia.org/resource/200109110004> .
+	  
+<http://dbpedia.org/resource/200109110004>
+      a       vocab:event ;
+      vocab:year "2001" ;
+      vocab:发生的国家 <http://dbpedia.org/resource/United_States> ;
+      vocab:事件发生的日期 "11" ;
+      vocab:事件发生的月份 "9" ;
+      vocab:事件发生的纬度 "40.71455" ;
+      vocab:事件发生的经度 "-74.007124" ;
+      rdfs:label "美国9·11抢劫事件-200109110004"@en ;
+      vocab:参加该事件的恐怖份子总数 "5" ;
+      vocab:武器类型 resource:tangled_warfare ;
+      vocab:死亡人数 "1381.5" ;
+      vocab:组织名称 "Al Qaeda" ;
+      vocab:袭击目标类型 resource:civilians ;
+      vocab:袭击类型 resource:rob .
+
+	  
+<http://dbpedia.org/resource/200109110005>
+      a       vocab:event ;
+      vocab:year "2001" ;
+      vocab:发生的国家 <http://dbpedia.org/resource/United_States> ;
+      vocab:事件发生的日期 "11" ;
+      vocab:事件发生的月份 "9" ;
+      vocab:事件发生的纬度 "40.71455" ;
+      vocab:事件发生的经度 "-74.007124" ;
+      rdfs:label "美国9·11抢劫事件-200109110005"@en ;
+      vocab:参加该事件的恐怖份子总数 "5" ;
+      vocab:武器类型 resource:tangled_warfare ;
+      vocab:死亡人数 "1381.5" ;
+      vocab:组织名称 "Al Qaeda" ;
+      vocab:袭击目标类型 resource:civilians ;
+      vocab:袭击类型 resource:rob .
+	  
+<http://dbpedia.org/resource/200109110006>
+      a       vocab:event ;
+      vocab:year "2001" ;
+      vocab:发生的国家 <http://dbpedia.org/resource/United_States> ;
+      vocab:事件发生的日期 "11" ;
+      vocab:事件发生的月份 "9" ;
+      vocab:事件发生的纬度 "38.89051" ;
+      vocab:事件发生的经度 "-77.086294" ;
+      rdfs:label "美国9·11抢劫事件-200109110006"@en ;
+      vocab:参加该事件的恐怖份子总数 "5" ;
+      vocab:武器类型 resource:tangled_warfare ;
+      vocab:死亡人数 "189" ;
+      vocab:组织名称 "Al Qaeda" ;
+      vocab:袭击目标类型 resource:government ;
+      vocab:袭击类型 resource:rob .
+	  
+<http://dbpedia.org/resource/200109110007>
+      a       vocab:event ;
+      vocab:year "2001" ;
+      vocab:发生的国家 <http://dbpedia.org/resource/United_States> ;
+      vocab:事件发生的日期 "11" ;
+      vocab:事件发生的月份 "9" ;
+      vocab:事件发生的纬度 "40.048868" ;
+      vocab:事件发生的经度 "-78.902371" ;
+      rdfs:label "美国9·11抢劫事件-200109110007"@en ;
+      vocab:参加该事件的恐怖份子总数 "4" ;
+      vocab:武器类型 resource:tangled_warfare ;
+      vocab:死亡人数 "44" ;
+      vocab:组织名称 "Al Qaeda" ;
+      vocab:袭击目标类型 resource:civilians ;
+      vocab:袭击类型 resource:rob .
+	  
+<http://dbpedia.org/resource/13>
+      a       vocab:group ;
+      vocab:主要事件数目 10 ;
+      vocab:使命及关注点 "It seeks an independent Islamic state for the Filipino Muslim minority." ;
+      vocab:其他意识形态 """Salafi;
+Separatist;
+Sunni;""" ;
+      vocab:总部所在国家 "Philippines" ;
+      vocab:目前组织人数区间 "100-1000人" ;
+      rdfs:label "阿布沙耶夫组织（ASG）"@en ;
+      vocab:组织名称 "Abu Sayyaf Group (ASG)" ;
+      vocab:实施袭击 <http://dbpedia.org/resource/200108020001> , <http://dbpedia.org/resource/200210180001> .
+	  
+<http://dbpedia.org/resource/200108020001>
+      a       vocab:event ;
+      vocab:year "2001" ;
+      vocab:发生的国家 <http://dbpedia.org/resource/Philippines> ;
+      vocab:事件发生的日期 "2" ;
+      vocab:事件发生的月份 "8" ;
+      vocab:事件发生的纬度 "6.62139" ;
+      vocab:事件发生的经度 "122.143825" ;
+      rdfs:label "菲律宾8·2绑架事件-200108020001"@en ;
+      vocab:武器类型 resource:tangled_warfare ;
+      vocab:死亡人数 "4" ;
+      vocab:组织名称 "Abu Sayyaf Group (ASG)" ;
+      vocab:袭击目标类型 resource:civilians ;
+      vocab:袭击类型 resource:kidnap .
+	  
+<http://dbpedia.org/resource/200210180001>
+      a       vocab:event ;
+      vocab:year "2002" ;
+      vocab:发生的国家 <http://dbpedia.org/resource/Philippines> ;
+      vocab:事件发生的日期 "18" ;
+      vocab:事件发生的月份 "10" ;
+      vocab:事件发生的纬度 "14.676323" ;
+      vocab:事件发生的经度 "121.043985" ;
+      rdfs:label "菲律宾10·18爆炸事件-200210180001"@en ;
+      vocab:武器类型 resource:bomb ;
+      vocab:死亡人数 "3" ;
+      vocab:组织名称 "Abu Sayyaf Group (ASG)" ;
+      vocab:袭击目标类型 resource:traffic ;
+      vocab:袭击类型 resource:explosion .

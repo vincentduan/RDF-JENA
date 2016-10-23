@@ -1,0 +1,68 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix XMLSchema: <http://www.w3.org/2001/XMLSchema#> .
+
+
+@prefix resource: <http://dbpedia.org/resource/> .
+
+
+<http://dbpedia.org/ontology/event123> rdf:type owl:Class .
+<http://dbpedia.org/ontology/group123> rdf:type owl:Class .
+
+<http://dbpedia.org/ontology/event123> rdfs:label "event123"@en .
+<http://dbpedia.org/ontology/group123> rdfs:label "group123"@en .
+
+
+
+
+
+
+
+
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/2000/01/rdf-schema#label> "year123"@en .
+
+
+
+
+
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#FunctionalProperty> .
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/2000/01/rdf-schema#label> "year123"@en .
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/2000/01/rdf-schema#domain> <http://dbpedia.org/ontology/event123> .
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/ontology/year123> <http://www.w3.org/ns/prov#wasDerivedFrom> <http://mappings.dbpedia.org/index.php/OntologyProperty:birthYear> .
+
+
+<http://www.w3.org/2001/XMLSchema#gYear> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+<http://www.w3.org/2001/XMLSchema#gYear> <http://www.w3.org/2000/01/rdf-schema#label> "xsd:gYear"@en .
+
+
+
+
+
+
+
+<http://dbpedia.org/resource/Philippines> rdfs:label "菲律宾"@en .
+<http://dbpedia.org/resource/United_States> rdfs:label "美国"@en .
+
+
+
+resource:tangled_warfare rdfs:label "混战"@en .
+resource:bomb rdfs:label "炸弹"@en .
+
+
+resource:explosion rdfs:label "爆炸"@en .
+resource:kidnap rdfs:label "绑架"@en .
+resource:rob rdfs:label "抢劫"@en .
+
+
+
+resource:civilians rdfs:label "平民"@en .
+resource:government rdfs:label "政府"@en .
+resource:traffic rdfs:label "交通"@en .
+
+
