@@ -1,0 +1,349 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+Copyright (C) 2009 Philipp Heim, Sebastian Hellmann, Jens Lehmann, Steffen Lohmann and Timo Stegemann
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, see <http://www.gnu.org/licenses/>.	
+-->
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+		width="600" height="100%" borderAlpha="0.7" creationComplete="{init();}" title="编辑">
+	<mx:Script>
+		<![CDATA[
+			
+			import connection.config.IConfig;
+			import connection.model.ConnectionModel;
+			import flash.display.DisplayObject;
+			import flash.events.Event;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.Application;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			import popup.AddURI;
+			
+			private var _config:IConfig;
+			
+			public var expertSettings:ExpertSettings;
+			
+			[Bindable(event="configChange")]
+			public function get config():IConfig {
+				return _config;
+			}
+			
+			public function set config(value:IConfig):void {
+				_config = value;
+				
+				var o:Object;
+				
+				for each (o in _config.autocompleteURIs) {
+					tempACDP.addItem(o);
+				}
+				
+				for each (o in _config.ignoredProperties) {
+					tempIgPropDP.addItem(o);
+				}
+				
+				for each (o in _config.abstractURIs) {
+					tempAbDP.addItem(o);
+				}
+				
+				for each (o in _config.imageURIs) {
+					tempImDP.addItem(o);
+				}
+				
+				for each (o in _config.linkURIs) {
+					tempLiDP.addItem(o);
+				}
+				
+				dispatchEvent(new Event("configChange"));
+			}
+			
+			[Bindable]
+			private var tempACDP:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var tempIgPropDP:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var tempAbDP:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var tempImDP:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var tempLiDP:ArrayCollection = new ArrayCollection();
+			
+			private function init():void {
+				callLater(PopUpManager.centerPopUp, [this]);
+				
+			}
+			
+			
+			
+			public function apply():void {
+				
+				config.abbreviation = inAbbreviation.text;
+				config.abstractURIs = tempAbDP;
+				config.autocompleteURIs = tempACDP;
+				config.autocompleteLanguage = inACLang.text;
+				config.defaultGraphURI = inDefaultGraphURI.text;
+				config.description = inDescription.text;
+				config.dontAppendSPARQL = inDontAppendSPARQL.selected;
+				config.endpointURI = inEndpointURI.text;
+				config.imageURIs = tempImDP;
+				config.ignoredProperties = tempIgPropDP;
+				config.isVirtuoso = inIsVirtuoso.selected;
+				config.linkURIs = tempLiDP;
+				config.maxRelationLength = inMaxRelationLength.value;
+				config.method = inMethod.selectedItem.toString();
+				config.name = inName.text;
+				config.useProxy = inUseProxy.selected;
+				
+			}
+			
+			public function ok():void {
+				
+				apply();
+				
+				if (!ConnectionModel.getInstance().sparqlConfigs.contains(config)) {
+					ConnectionModel.getInstance().sparqlConfigs.addItem(config);
+					
+					if (expertSettings) {
+						expertSettings.configList.selectedItem = config;
+						expertSettings.setSelectedSPARQL();
+					}
+				}
+				
+				cancel();
+			}
+			
+			public function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function addACURI():void {
+				var addURI:AddURI = PopUpManager.createPopUp(Application.application as DisplayObject, AddURI) as AddURI;
+				addURI.collection = tempACDP;
+			}
+			
+			private var selectedACURI:Object;
+			
+			private function removeACURI():void {
+				if (inAutocompleteURIs.selectedItem != null) {
+					selectedACURI = inAutocompleteURIs.selectedItem;
+					Alert.show("Do you really want to delete this entry?", "Delete entry", Alert.YES + Alert.NO, this, dispatchCloseEventAC);
+				}
+			}
+			
+			private function dispatchCloseEventAC(event:CloseEvent):void {
+				if (event.detail==Alert.YES) {
+					tempACDP.removeItemAt(tempACDP.getItemIndex(selectedACURI));
+				}
+			}
+			
+			private function addIgPropURI():void {
+				var addURI:AddURI = PopUpManager.createPopUp(Application.application as DisplayObject, AddURI) as AddURI;
+				addURI.collection = tempIgPropDP;
+			}
+			
+			private var selectedIgPropURI:Object;
+			
+			private function removeIgPropURI():void {
+				if (inIgnoredProperties.selectedItem != null) {
+					selectedIgPropURI = inIgnoredProperties.selectedItem;
+					Alert.show("Do you really want to delete this entry?", "Delete entry", Alert.YES + Alert.NO, this, dispatchCloseEventIgProp);
+				}
+			}
+			
+			private function dispatchCloseEventIgProp(event:CloseEvent):void {
+				if (event.detail==Alert.YES) {
+					tempIgPropDP.removeItemAt(tempIgPropDP.getItemIndex(selectedIgPropURI));
+				}
+			}
+			
+			private function addAbURI():void {
+				var addURI:AddURI = PopUpManager.createPopUp(Application.application as DisplayObject, AddURI) as AddURI;
+				addURI.collection = tempAbDP;
+			}
+			
+			private var selectedAbURI:Object;
+			
+			private function removeAbURI():void {
+				if (inAbstractURIs.selectedItem != null) {
+					selectedAbURI = inAbstractURIs.selectedItem;
+					Alert.show("Do you really want to delete this entry?", "Delete entry", Alert.YES + Alert.NO, this, dispatchCloseEventAb);
+				}
+			}
+			
+			private function dispatchCloseEventAb(event:CloseEvent):void {
+				if (event.detail==Alert.YES) {
+					tempAbDP.removeItemAt(tempAbDP.getItemIndex(selectedAbURI));
+				}
+			}
+			
+			private function addImURI():void {
+				var addURI:AddURI = PopUpManager.createPopUp(Application.application as DisplayObject, AddURI) as AddURI;
+				addURI.collection = tempImDP;
+			}
+			
+			private var selectedImURI:Object;
+			
+			private function removeImURI():void {
+				if (inImageURIs.selectedItem != null) {
+					selectedImURI = inImageURIs.selectedItem;
+					Alert.show("Do you really want to delete this entry?", "Delete entry", Alert.YES + Alert.NO, this, dispatchCloseEventIm);
+				}
+			}
+			
+			private function dispatchCloseEventIm(event:CloseEvent):void {
+				if (event.detail==Alert.YES) {
+					tempImDP.removeItemAt(tempImDP.getItemIndex(selectedImURI));
+				}
+			}
+			
+			private function addLiURI():void {
+				var addURI:AddURI = PopUpManager.createPopUp(Application.application as DisplayObject, AddURI) as AddURI;
+				addURI.collection = tempLiDP;
+			}
+			
+			private var selectedLiURI:Object;
+			
+			private function removeLiURI():void {
+				if (inLinkURIs.selectedItem != null) {
+					selectedLiURI = inLinkURIs.selectedItem;
+					Alert.show("Do you really want to delete this entry?", "Delete entry", Alert.YES + Alert.NO, this, dispatchCloseEventLi);
+				}
+			}
+			
+			private function dispatchCloseEventLi(event:CloseEvent):void {
+				if (event.detail==Alert.YES) {
+					tempLiDP.removeItemAt(tempLiDP.getItemIndex(selectedLiURI));
+				}
+			}
+			
+			
+		]]>
+	</mx:Script>
+	
+	<mx:Box width="100%" height="410">
+		<mx:Form width="100%">
+			
+			<mx:FormItem width="100%" label="名称:" 
+					toolTip="Name of the SPARQL endpoint" >
+				<mx:TextInput id="inName" width="100%" text="{config.name}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="ID:" 
+					toolTip="An abbreviation or ID for the endpoint configuration. This can be used to load RelFinder with this configuration as default (e.g. http://www.visualdataweb.org/relfinder/RelFinder.swf?id=lmdb to load RelFinder with the 'Linked Movie Data Base' configuration as default)." >
+				<mx:TextInput id="inAbbreviation" width="100%" text="{config.abbreviation}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="描述:"
+					toolTip="A description of the SPARQL endpoint" >
+				<mx:TextArea id="inDescription" width="100%" text="{config.description}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="端点URI:"
+					toolTip="The URL of the SPARQL endpoint.  RelFinder will use this URL + '/sparql?' + a Query to send requests to this endpoint. Please keep this in mind, when you define this value." >
+				<mx:TextInput id="inEndpointURI" width="100%" text="{config.endpointURI}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="不添加'/sparql?':"
+					toolTip="Prevents RelFinder from appending '/sparql?' to the defined endpointURI." >
+				<mx:CheckBox id="inDontAppendSPARQL" width="100%" selected="{config.dontAppendSPARQL}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="Default Graph URI:"
+					toolTip="The default graph which should be used for the search. (normally not necessary)" >
+				<mx:TextInput id="inDefaultGraphURI" width="100%" text="{config.defaultGraphURI}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="是Virtuoso服务器:"
+					toolTip="If the SPARQL server is a 'Virtuoso' server, you can set this value = true. In this case RelFinder will use some special Virtuoso dependent commands for the autocomplete process, which may be faster. If you are not sure, set it to false. This should always work." >
+				<mx:CheckBox id="inIsVirtuoso" width="100%" selected="{config.isVirtuoso}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="使用Proxy:"
+					toolTip="If the SPARQL server has NO crossdomain.xml, set this value = true, to forward all queries to the defined proxy server.">
+				<mx:CheckBox id="inUseProxy" width="100%" selected="{config.useProxy}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="方法:"
+					toolTip="HTTP method for SPARQL requests. Possible values are POST and GET. POST is default." >
+				<mx:ComboBox id="inMethod" selectedItem="{config.method}">
+					<mx:ArrayCollection>
+						<mx:String>POST</mx:String>
+						<mx:String>GET</mx:String>
+					</mx:ArrayCollection>
+				</mx:ComboBox>
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="最大关系长度:"
+					toolTip="The maximum length of relations RelFinder will search for.">
+				<mx:NumericStepper id="inMaxRelationLength" minimum="0" value="{config.maxRelationLength}" />
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="自动完成URIs:"
+					toolTip="A list of properties which will be use for autocomplete search and input disambiguation process. In most cases you can find the resources by its label (http://www.w3.org/2000/01/rdf-schema#label)">
+				<mx:HBox width="100%" height="60">
+					<mx:List id="inAutocompleteURIs" width="100%" height="100%" dataProvider="{tempACDP}" 
+						toolTip="" />
+					<mx:VBox>
+						<mx:Button id="bAddACURI" label="+" click="{addACURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0"/>
+						<mx:Button id="bRemoveACURI" label="-" click="{removeACURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0"/>
+					</mx:VBox>
+				</mx:HBox>
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="自动完成语言:"
+					toolTip="The language code, the auto complete feature will use for filtering (e.g., 'en' for English or 'de' for German). This feature is not supported by all endpoints. If you are not sure, leave it blank (default value).">
+				<mx:HBox width="100%">
+					<mx:TextInput id="inACLang" width="50" text="{config.autocompleteLanguage}" />
+				</mx:HBox>
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="忽略的属性:"
+					toolTip="Properties which should not be contained in the result graph.">
+				<mx:HBox width="100%" height="100">
+					<mx:List id="inIgnoredProperties" width="100%" height="100%" dataProvider="{tempIgPropDP}" />
+					<mx:VBox>
+						<mx:Button id="bAddIgPropURI" label="+" click="{addIgPropURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0" />
+						<mx:Button id="bRemoveIgPropURI" label="-" click="{removeIgPropURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0"/>
+					</mx:VBox>
+				</mx:HBox>
+			</mx:FormItem>
+			
+			<mx:FormItem width="100%" label="摘要URIs:"
+					toolTip="A list of property URI of abstracts or discriptions of the resource, which should be displayed in the info boxes, if available.  If no value for the 1st entry will be found, RelFinder will try to find a value for the 2nd entry etc.">
+				<mx:HBox width="100%" height="50">
+					<mx:List id="inAbstractURIs" width="100%" height="100%" dataProvider="{tempAbDP}" />
+					<mx:VBox>
+						<mx:Button id="bAddAbURI" label="+" click="{addAbURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0"/>
+						<mx:Button id="bRemoveAbURI" label="-" click="{removeAbURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0"/>
+					</mx:VBox>
+				</mx:HBox>
+			</mx:FormItem>
+			<mx:FormItem width="100%" label="图像URIs:"
+					toolTip="A list of property URI of images which should be displayed in the info boxes, if available. If no value for the 1st entry will be found, RelFinder will try to find a value for the 2nd entry etc.">
+				<mx:HBox width="100%" height="50">
+					<mx:List id="inImageURIs" width="100%" height="100%" dataProvider="{tempImDP}" />
+					<mx:VBox>
+						<mx:Button id="bAddImURI" label="+" click="{addImURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0" />
+						<mx:Button id="bRemoveImURI" label="-" click="{removeImURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0"/>
+					</mx:VBox>
+				</mx:HBox>
+			</mx:FormItem>
+			
+			<mx:FormItem width="100%" label="链接URIs:"
+					toolTip="A list of property URI of web links which should be displayed in the info boxes, if available. All will be displayed.">
+				<mx:HBox width="100%" height="50">
+					<mx:List id="inLinkURIs" width="100%" height="100%" dataProvider="{tempLiDP}" />
+					<mx:VBox>
+						<mx:Button id="bAddLiURI" label="+" click="{addLiURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0"/>
+						<mx:Button id="bRemoveLiURI" label="-" click="{removeLiURI();}" width="19" height="19" fontStyle="bold" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0"/>
+					</mx:VBox>
+				</mx:HBox>
+			</mx:FormItem>
+			
+		</mx:Form>
+	</mx:Box>
+	
+	<mx:HBox horizontalAlign="right" width="100%">
+		<mx:Button id="okButton" label="确定" click="{ok();}" height="20" paddingLeft="6" paddingRight="6" />
+		<mx:Button id="cancelButton" label="取消" click="{cancel();}" height="20" paddingLeft="6" paddingRight="6" />
+	</mx:HBox>
+	
+</mx:TitleWindow>

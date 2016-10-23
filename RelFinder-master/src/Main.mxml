@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+
+<!-- 
+Copyright (C) 2009 Philipp Heim, Sebastian Hellmann, Jens Lehmann, Steffen Lohmann and Timo Stegemann
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, see <http://www.gnu.org/licenses/>.	
+-->
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+				xmlns:fc="com.adobe.flex.extras.controls.springgraph.*"
+				xmlns:hc="com.hillelcoren.components.*"
+				xmlns:reflector="com.rictus.reflector.*"
+				xmlns:code="http://code.google.com/p/flexlib/"
+				xmlns:bbp="components.*"
+				xmlns:local="*"
+				xmlns:tab="positionedTabNavigator.*"
+				layout="absolute" verticalAlign="middle" backgroundColor="white" 
+				paddingLeft="2" paddingBottom="2" paddingRight="2" paddingTop="2"
+				fontFamily="Verdana" fontSize="15"
+				
+				preinitialize="preInitHandler(event)"
+				
+				preloader="preloader.CustomPreloader"
+				>
+					
+				<!--creationComplete="setup()"
+					preloader="preloader.CustomPreloader"-->
+				
+	<mx:Script source="Source.as"/>
+	<mx:Style source="../assets/css/styles.css"/>
+	
+	<mx:VBox id="mainVBox" width="100%" height="100%" backgroundColor="#f8f8f8" paddingBottom="0" paddingTop="0" paddingRight="0" paddingLeft="0">
+		
+		<mx:HDividedBox id="hdivbox" width="100%" backgroundColor="#EEEEEE" height="100%" liveDragging="true" paddingBottom="2" paddingTop="2" paddingRight="2" paddingLeft="2">
+			
+			<bbp:ButtonBarPanel id="findRelationPanel" width="450" height="100%" titleIcon="@Embed('../assets/img/RelFinder-Logo-kl.png')"  buttons="{getButtons()}" > <!-- title="Find Relations" -->
+				<mx:TabNavigator width="100%" height="100%" minWidth="280" id="tn" tabWidth="{tn.width/2 + 1}" cornerRadius="0" borderThickness="0" horizontalAlign="center" >
+					<mx:VBox id="tab1" label="在...之间" width="100%" horizontalScrollPolicy="off" verticalGap="0" >
+						
+						<local:InputFieldBox id="inputFieldBox" width="100%" paddingTop="0" paddingLeft="0"
+								paddingBottom="0" paddingRight="0" />
+							
+						
+						
+						<!--mx:HRule width="100%"/-->
+							
+						<mx:VDividedBox id="vdivbox" visible="{_showOptions}" width="100%" height="100%" liveDragging="true" paddingBottom="0" paddingTop="0" paddingRight="0" paddingLeft="0">
+							<mx:VBox id="filterOptions" width="100%" height="100%" paddingBottom="2" paddingTop="2" paddingRight="2" paddingLeft="2" horizontalGap="2">
+								<!-- FILTER OPTIONS -->
+								<mx:HBox width="100%">
+									<mx:Label fontWeight="bold" text='经过以下过滤: '/>
+									<mx:Spacer width="100%" />
+									<mx:Label text="关系: {Graphmodel.getInstance().getRelationCountInfo()}" />
+								</mx:HBox>
+								
+								<tab:PositionedTabNavigator width="100%" tabStyleName="myTabStyle" height="100%" id="tn2" tabWidth="{tn2.width/4}" cornerRadius="0" borderThickness="0">
+									
+									<local:FilterTab id="tab10" label="长度" list="{Graphmodel.getInstance().pathLengths}" >
+									<!--<mx:VBox id="tab11" label="lengths">-->
+										<local:SortableDataGrid id="dgL" height="100%" width="100%" sortIndex="0" rowCount="4" dataProvider="{Graphmodel.getInstance().pathLengths}" selectedItem="{Graphmodel.getInstance().selectedPathLength}" selectionColor="0xCDFFC1" rollOverColor="0xE3FFD6" change="{Graphmodel.getInstance().selectedPathLength = dgL.selectedItem as PathLength}" variableRowHeight="true">
+											<local:columns>
+												<mx:DataGridColumn dataField="label" wordWrap="true" headerStyleName="myHeader" headerText="中间节点级数"></mx:DataGridColumn>
+												<mx:DataGridColumn width="70" dataField="stringNumOfPaths" headerStyleName="myHeader" headerText="数量" sortCompareFunction="numColumnCompareFunction"></mx:DataGridColumn>
+												<mx:DataGridColumn width="50" dataField="isVisible" headerStyleName="myHeader" headerText="显示" itemRenderer="graphElements.VisibilityRenderer"></mx:DataGridColumn>
+											</local:columns>
+										</local:SortableDataGrid>
+										
+									</local:FilterTab>
+									
+									<local:FilterTab id="tab12" label="类别"  list="{Graphmodel.getInstance().concepts}">
+										<local:SortableDataGrid id="dgC" height="100%" width="100%" sortIndex="0" rowCount="4" dataProvider="{Graphmodel.getInstance().concepts}" selectedItem="{Graphmodel.getInstance().selectedConcept}" selectionColor="0xCDFFC1" rollOverColor="0xE3FFD6" change="{Graphmodel.getInstance().selectedConcept = dgC.selectedItem as Concept}" variableRowHeight="true">
+											<local:columns>
+												<mx:DataGridColumn dataField="label" headerStyleName="myHeader" wordWrap="true" headerText="节点类别"></mx:DataGridColumn>
+												<mx:DataGridColumn width="70" dataField="stringNumOfElements" headerStyleName="myHeader" headerText="数量" sortCompareFunction="numColumnCompareFunction"></mx:DataGridColumn>
+												<mx:DataGridColumn width="50" dataField="isVisible" headerStyleName="myHeader" headerText="显示" itemRenderer="graphElements.VisibilityRenderer"></mx:DataGridColumn>
+											</local:columns>
+										</local:SortableDataGrid>
+									</local:FilterTab>
+									
+									<local:FilterTab id="tab13" label="关系" list="{Graphmodel.getInstance().relTypes}">
+										<local:SortableDataGrid id="dgT" height="100%" width="100%" sortIndex="0" rowCount="4" dataProvider="{Graphmodel.getInstance().relTypes}" selectedItem="{Graphmodel.getInstance().selectedRelType}" selectionColor="0xCDFFC1" rollOverColor="0xE3FFD6" change="{Graphmodel.getInstance().selectedRelType = dgT.selectedItem as RelType}" variableRowHeight="true">
+											<local:columns>
+												<mx:DataGridColumn dataField="label" headerStyleName="myHeader" wordWrap="true" headerText="关系类型"></mx:DataGridColumn>
+												<mx:DataGridColumn width="70" dataField="stringNumOfRelations" headerStyleName="myHeader" headerText="数量" sortCompareFunction="numColumnCompareFunction"></mx:DataGridColumn>
+												<mx:DataGridColumn width="50" dataField="isVisible" headerStyleName="myHeader" headerText="显示" itemRenderer="graphElements.VisibilityRenderer"></mx:DataGridColumn>
+											</local:columns>
+										</local:SortableDataGrid>
+									</local:FilterTab>
+									
+									<local:FilterTab id="tab11" label="中间节点"  list="{Graphmodel.getInstance().connectivityLevels}">
+										<local:SortableDataGrid id="dgCc" height="100%" width="100%" sortIndex="0" rowCount="4" dataProvider="{Graphmodel.getInstance().connectivityLevels}" selectedItem="{Graphmodel.getInstance().selectedConnectivityLevel}" selectionColor="0xCDFFC1" rollOverColor="0xE3FFD6" change="{Graphmodel.getInstance().selectedConnectivityLevel = dgCc.selectedItem as ConnectivityLevel}" variableRowHeight="true">
+											<local:columns>
+												<mx:DataGridColumn dataField="label" headerStyleName="myHeader" wordWrap="true" headerText="中间节点级数"></mx:DataGridColumn>
+												<mx:DataGridColumn width="70" dataField="stringNumOfElements" headerStyleName="myHeader" headerText="数量" sortCompareFunction="numColumnCompareFunction"></mx:DataGridColumn>
+												<mx:DataGridColumn width="50" dataField="isVisible" headerStyleName="myHeader" headerText="显示" itemRenderer="graphElements.VisibilityRenderer"></mx:DataGridColumn>
+											</local:columns>
+										</local:SortableDataGrid>
+									</local:FilterTab>
+									
+								</tab:PositionedTabNavigator>
+							</mx:VBox>
+							
+							<local:InfoBox id="infoBox" findRelationPanel="{tn}" selectedElement="{selectedElement}" />
+							
+						</mx:VDividedBox>
+						
+						<!-- </mx:VBox> -->
+						
+					</mx:VBox>
+					
+					<local:ExampleBox id="tabExamples" label="范例" width="100%" loadExample="loadExample2((event as ResultEvent).result as Example)" />
+					
+				</mx:TabNavigator>
+			</bbp:ButtonBarPanel>
+			
+			<mx:VBox width="100%" height="100%">
+				
+				<fc:SpringGraph id="sGraph" creationComplete="setup();"
+					backgroundColor="#ffffff" height="100%" width="100%" left="0" right="0" top="0" bottom="0"
+					viewFactory="{new ViewFactory()}" edgeRenderer="{new DirectedEdge()}"
+					dataProvider="{Graphmodel.getInstance().graph}"
+					repulsionFactor="0.5" >
+						
+						<fc:removeItemEffect>
+							<mx:Fade alphaFrom="1" alphaTo="0" duration="1000"/>				
+						</fc:removeItemEffect>
+						
+						<fc:addItemEffect>
+							<mx:Fade alphaFrom="0" alphaTo="1" duration="2000"/>
+						</fc:addItemEffect>
+						
+				</fc:SpringGraph>
+			</mx:VBox>
+		</mx:HDividedBox>
+	</mx:VBox>
+	
+	<!-- Graph "Zoom" -->
+	<!--<mx:VSlider id="zoomSlider" x="{findRelationPanel.width + 30}" y="10" tickInterval="1" 
+            labels="['min', 'max']" minimum="{Graphmodel.ZOOM_MINIMUM}" maximum="{Graphmodel.ZOOM_MAXIMUM}" snapInterval="1" change="zoomSliderChangeHandler(event);" />-->
+	
+	<!-- STATUS INFO (New Position)-->
+	<mx:ApplicationControlBar id="statusBar" y="10" x="{mainVBox.width - statusBar.width - 10}"
+		paddingBottom="1" paddingLeft="1" paddingRight="1" paddingTop="1" horizontalGap="0"
+		fillAlphas="[0.9, 0.9]" fillColors="[#EEEEEE, #CCCCCC]" dropShadowEnabled="false"
+		click="showErrorLog();" useHandCursor="true" mouseChildren="false" buttonMode="true">
+		
+			<mx:Text id="statusLabel" text="状态：空闲" selectable="false" fontWeight="bold"/>
+			<local:LoadingAnimation id="la" circleRadius="7" dotSize="2" numberOfDots="8"/>
+	</mx:ApplicationControlBar>
+	<mx:Button id="stopDelayed" label="跳过延时构图" y="{statusBar.height + 10 + 5}" x="{mainVBox.width - stopDelayed.width - 10}"
+			visible="{!(!la.isRotating() || !Graphmodel.getInstance().delayedDrawing)}" click="{Graphmodel.getInstance().delayedDrawing = false;}" 
+			height="20" paddingLeft="6" paddingRight="6" />
+	
+</mx:Application>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<data>
+	
+	<example>
+		<endpoint>anti</endpoint>
+		<object>
+			<label>美国9·11抢劫事件-200109110004</label>
+			<uri>http://dbpedia.org/resource/200109110004</uri>
+		</object>
+		<object>
+			<label>美国9·11抢劫事件-200109110005</label>
+			<uri>http://dbpedia.org/resource/200109110005</uri>
+		</object>
+		<object>
+			<label>美国9·11抢劫事件-200109110006</label>
+			<uri>http://dbpedia.org/resource/200109110006</uri>
+		</object>
+		<object>
+			<label>美国9·11抢劫事件-200109110007</label>
+			<uri>http://dbpedia.org/resource/200109110007</uri>
+		</object>
+	</example>
+	
+	<example>
+		<endpoint>anti</endpoint>
+		<object>
+			<label>基地组织</label>
+			<uri>http://dbpedia.org/resource/23</uri>
+		</object>
+		<object>
+			<label>伊拉克</label>
+			<uri>http://dbpedia.org/resource/Iraq</uri>
+		</object>
+	</example>
+</data>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+Copyright (C) 2009 Philipp Heim, Sebastian Hellmann, Jens Lehmann, Steffen Lohmann and Timo Stegemann
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, see <http://www.gnu.org/licenses/>.	
+-->
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"  width="560" height="100%" borderAlpha="0.7" creationComplete="{init();}">
+	<mx:Script>
+		<![CDATA[
+			import connection.config.Config;
+			import connection.config.DBTuneConfig;
+			import connection.config.IConfig;
+			import connection.LookUpSPARQL;
+			import connection.LookUpKeywordSearch;
+			import flash.display.Loader;
+			import flash.events.Event;
+			import flash.net.FileReference;
+			import flash.utils.ByteArray;
+			import mx.collections.ArrayCollection;
+			import mx.controls.List;
+			import mx.core.Application;
+			import mx.events.ListEvent;
+			import utils.ConfigUtil;
+			
+			import connection.model.ConnectionModel;
+			import mx.controls.RadioButton;
+			import mx.events.ItemClickEvent;
+			import mx.managers.PopUpManager;
+			
+			private var fileOpen:FileReference;
+			private var fileSave:FileReference = new FileReference();
+			
+			private var loader:Loader;
+			private var myData:ByteArray;
+			
+			private function init():void {
+				title = "设置";
+				PopUpManager.centerPopUp(this);
+				
+				configList.dataProvider = ConnectionModel.getInstance().sparqlConfigs;
+				configList.selectedItem = ConnectionModel.getInstance().sparqlConfig;
+				setSelectedSPARQL();
+				callLater(configList.scrollToIndex, [configList.selectedIndex]);
+				
+				fileOpen = new FileReference();
+				fileOpen.addEventListener(Event.SELECT, selectFile);
+				fileOpen.addEventListener(Event.COMPLETE, openFile);
+				
+				
+			}
+			
+			public function apply():void {
+				
+				ConnectionModel.getInstance().sparqlConfig = configList.selectedItem as IConfig;
+				ConnectionModel.getInstance().proxy = proxyInput.text;
+				
+			}
+			
+			public function ok():void {
+				
+				apply();
+				cancel();
+			}
+			
+			public function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+			public function openQueryTool():void {
+				
+				apply();
+				PopUpManager.createPopUp(this, SPARQLQueryTool, true);
+			}
+			
+			public function selectFirstSPARQL():void {
+				if (configList.dataProvider.length > 0) {
+					configList.selectedItem = configList.dataProvider.getItemAt(0);
+					configList.validateNow();
+					setSelectedSPARQL();
+				}else {
+					ConnectionModel.getInstance().sparqlConfig = new Config();
+					ConnectionModel.getInstance().sparqlConfigs.addItem(ConnectionModel.getInstance().sparqlConfig);
+					configList.validateNow();
+					configList.selectedItem = configList.dataProvider.getItemAt(0);
+					configList.validateNow();
+					setSelectedSPARQL();
+				}
+			}
+			
+			public function setSelectedSPARQL():void {
+				validateNow();
+				
+				var conf:IConfig = configList.selectedItem as IConfig;
+				if (conf != null) {
+					selectedSPARQL.text = conf.name + " - \"" + conf.endpointURI + "\"";
+				}else {
+					selectedSPARQL.text = "No configuration selected";
+				}
+			}
+			
+			private function create():void {
+				var newConfig:IConfig = new Config();
+				newConfig.name = "New Config " + (new Date()).toString();
+				newConfig.autocompleteURIs = new ArrayCollection(["http://www.w3.org/2000/01/rdf-schema#label"]);
+				newConfig.linkURIs = new ArrayCollection(["http://xmlns.com/foaf/0.1/page"]);
+				newConfig.imageURIs = new ArrayCollection(["http://xmlns.com/foaf/0.1/depiction"]);
+				
+				var edit:EditEndpointConfig = PopUpManager.createPopUp(this, EditEndpointConfig, true) as EditEndpointConfig;
+				edit.config = newConfig;
+				edit.expertSettings = this;
+			}
+			
+			
+			
+			public function save(event:Event):void {
+				fileSave.save(ConfigUtil.getXMLfromConfiguration(proxyInput.text), "RelFinderConfig.rfxml");
+			}
+			
+			public function load(event:Event):void {
+				fileOpen.browse([new FileFilter("RelationFinder2 Config (*.rfxml)", "*.rfxml")]);
+			}
+			private function selectFile(e:Event):void {
+				fileOpen.load();
+			}
+
+			private function openFile(e:Event):void {
+				var result:XML = new XML(fileOpen.data);
+				
+				ConnectionModel.getInstance().sparqlConfigs.removeAll();
+				
+				ConfigUtil.setConfigurationFromXML(result);
+				
+				selectFirstSPARQL();
+			}
+			
+		]]>
+	</mx:Script>
+	
+	
+	<mx:VBox width="100%" height="100%">
+		<mx:VBox width="100%" height="100%" id="configBox">
+			
+			<mx:Form id="proxyForm" width="100%" height="100%">
+				<mx:FormItem label="代理:" width="100%" height="100%">
+					<mx:HBox width="100%" paddingBottom="0" paddingTop="0" paddingRight="0" paddingLeft="0">
+						<mx:TextInput id="proxyInput" width="100%" text="{ConnectionModel.getInstance().proxy}" />
+						<mx:Button id="proxyReset" label="重置" toolTip="Reset proxy url to default proxy url from config file" click="{proxyInput.text = ConnectionModel.getInstance().defaultProxy}" 
+								 height="20" paddingLeft="6" paddingRight="6" skin="skin.EmptyButtonSkin"/>
+					</mx:HBox>
+				</mx:FormItem>
+			</mx:Form>
+			
+			<mx:HRule width="100%"/>
+			<mx:HBox>
+				<mx:Label id="sel" text="已选择:" />
+				<mx:Label id="selectedSPARQL" width="{configBox.width - 20 - sel.width}" truncateToFit="true" fontWeight="bold" fontSize="12" />
+			</mx:HBox>
+			
+			<mx:List id="configList" width="100%" height="300" itemClick="setSelectedSPARQL();" rowCount="0"
+				itemRenderer="popup.EndpointListRenderer" variableRowHeight="true" alternatingItemColors="[0xFFFFFF, 0xEFF1F2]" />
+
+		</mx:VBox>
+		<mx:HBox width="100%">
+			<mx:Button id="createConfig" label="创建" click="{create();}"  height="20" paddingLeft="6" paddingRight="6" skin="skin.EmptyButtonSkin"/>
+			<mx:Button id="saveConfigs" label="保存配置" click="save(event);"  height="20" paddingLeft="6" paddingRight="6" skin="skin.EmptyButtonSkin"/>
+			<mx:Button id="loadConfigs" label="载入配置" click="load(event);"  height="20" paddingLeft="6" paddingRight="6" skin="skin.EmptyButtonSkin"/>
+			<mx:Button id="queryTool" label="query工具" click="{openQueryTool();}"  height="20" paddingLeft="6" paddingRight="6" skin="skin.EmptyButtonSkin"/>
+			<mx:Spacer width="100%" />
+			<mx:Button id="okButton" label="确定" click="{ok();}"  height="20" paddingLeft="6" paddingRight="6"/>
+			<mx:Button id="cancelButton" label="取消" click="{cancel();}"  height="20" paddingLeft="6" paddingRight="6"/>
+		</mx:HBox>
+	</mx:VBox>
+</mx:TitleWindow>

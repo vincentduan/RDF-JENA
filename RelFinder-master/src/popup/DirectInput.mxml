@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+Copyright (C) 2009 Philipp Heim, Sebastian Hellmann, Jens Lehmann, Steffen Lohmann and Timo Stegemann
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, see <http://www.gnu.org/licenses/>.	
+-->
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+				xmlns:local="toolTip.*"
+				paddingRight="0" paddingLeft="0" paddingBottom="0"
+				width="400" height="460" borderAlpha="1.0" creationComplete="{init();}" 
+				title="输入资源URI">
+	
+	<mx:Script>
+		<![CDATA[
+			
+			import flash.events.Event;
+			import graphElements.Element;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.ResultEvent;
+			
+			private function init():void {
+				callLater(PopUpManager.centerPopUp, [this]);
+				
+				
+			}
+			
+			private function validResourceHandler(event:Event):void {
+				if (selectedElement != null) {
+					
+					if (selectedElement.isValidResource) {
+						okButton.enabled = true;
+					}else {
+						okButton.enabled = false;
+					}
+					
+				}
+			}
+			
+			[Bindable]
+			public var resourceURI:String = ""; 
+			
+			private var _selectedElement:Element = null;
+			
+			[Bindable(event="selectedElementChanged")]
+			public function get selectedElement():Element {
+				return _selectedElement;
+			}
+			
+			public function set selectedElement(value:Element):void {
+				_selectedElement = value;
+				if (_selectedElement!= null) {
+					_selectedElement.addEventListener("isValidResourceChanged", validResourceHandler);
+				}
+				dispatchEvent(new Event("selectedElementChanged"));
+			}
+			
+			public function validate():void {
+				resourceURI = inURI.text;
+				selectedElement = new Element(resourceURI, resourceURI, resourceURI);
+			}
+			
+			
+			public function ok():void {
+				if (selectedElement) {
+					var result:Object = new Object();
+					result.label = selectedElement.rdfLabel;
+					result.uris = new Array(selectedElement.resourceURI);
+					dispatchEvent(new ResultEvent("DirectInputResult", false, true, result));
+					
+					cancel();
+				}
+				
+			}
+			
+			public function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+			
+		]]>
+	</mx:Script>
+	
+	<mx:VBox width="100%" height="80" horizontalAlign="right" paddingLeft="0" paddingRight="0">
+		<mx:Form width="100%" paddingBottom="0" paddingLeft="4" paddingRight="4">
+			<mx:FormItem width="100%" label="资源URI:">
+				<mx:VBox width="100%" horizontalAlign="right">
+					<mx:TextInput id="inURI" width="100%" text="{resourceURI}" enter="validate()" />
+					<mx:Button label="确认" click="validate()" />
+				</mx:VBox>
+			</mx:FormItem>
+		</mx:Form>
+	</mx:VBox>
+	<local:ToolTipInfoBox id="infoBox" height="290" width="380" visible="{infoBox.selectedElement != null}" selectedElement="{selectedElement}"/>
+	<mx:Spacer height="100%" />
+	<mx:HBox width="100%" paddingRight="4" paddingBottom="4">
+		<mx:Spacer width="100%" />
+		<mx:Button id="okButton" label="使用" click="ok();" enabled="false" height="20" paddingLeft="6" paddingRight="6" />
+		<mx:Button id="cancelButton" label="取消" click="cancel();" height="20" paddingLeft="6" paddingRight="6" />
+	</mx:HBox>
+</mx:TitleWindow>

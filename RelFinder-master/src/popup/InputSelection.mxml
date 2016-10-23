@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+Copyright (C) 2009 Philipp Heim, Sebastian Hellmann, Jens Lehmann, Steffen Lohmann and Timo Stegemann
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, see <http://www.gnu.org/licenses/>.	
+-->
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+				xmlns:utils="utils.*"
+				width="300" height="400" borderAlpha="1.0" creationComplete="{init();}">
+	<mx:Script>
+		<![CDATA[
+			import com.hillelcoren.components.AutoComplete;
+			import connection.model.ConnectionModel;
+			import connection.ILookUp;
+			import connection.LookUpKeywordSearch;
+			import connection.LookUpSPARQL;
+			import connection.SPARQLConnection;
+			import connection.SPARQLResultEvent;
+			import flash.events.Event;
+			import flash.events.KeyboardEvent;
+			import flash.ui.Keyboard;
+			import global.GlobalString;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.List;
+			import mx.core.Application;
+			import mx.core.IToolTip;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			import mx.managers.ToolTipManager;
+			import mx.rpc.events.ResultEvent;
+			import mx.utils.ObjectUtil;
+			import popup.InputSelectionEvent;
+			
+			private function init():void {
+				//"Your input is not clear.\nPlease select a resource from the list or check your input for spelling mistakes."
+				focusManager.setFocus(textInput);
+				this.x = 180;
+				this.y = 30;
+				setStyle("borderColor", getStyle("themeColor"));
+				
+				addEventListener("dpChange", dpChangeHandler);
+				addEventListener("offsetIndexChange", offsetIndexChangeHandler);
+				
+				textInput.setSelection(textInput.text.length, textInput.text.length);
+				
+				
+				// if user starts input disambiguation, before autocompelte recieves his results, a new request must be started
+				
+				if (_dataProvider == null) {
+					_dataProvider = new ArrayCollection();
+				}
+				
+				inputChanged(new Event("inputChange"));
+				
+				//if (_dataProvider.length == 0 || _dataProvider.getItemAt(0) == null || _dataProvider.getItemAt(0).label.toString() == GlobalString.SEARCHING) {
+					//trace("start new search");
+					//inputChanged(new Event("inputChange"));
+				//}
+			}
+			
+			protected var offset:int = 8;
+			
+			private var _offsetIndex:int = 0;
+			
+			[Bindable(event="offsetIndexChange")]
+			protected function get offsetIndex():int {
+				return _offsetIndex;
+			}
+			
+			protected function set offsetIndex(value:int):void {
+				if (value < 0) {
+					value = 0;
+				}
+				
+				if (value != _offsetIndex) {
+					_offsetIndex = value;
+					dispatchEvent(new Event("offsetIndexChange"));
+				}
+			}
+			
+			protected function offsetIndexChangeHandler(event:Event):void {
+				var results:ArrayCollection = new ArrayCollection();
+				var searching:Object = new Object();
+				searching.label = GlobalString.SEARCHING;
+				results.addItem(searching);
+				dataProvider = results;
+				ConnectionModel.getInstance().sparqlConfig.lookUp.run(textInput.text, this, offset, offset * offsetIndex);
+			}
+			
+			private var _msgText:String = "";
+			
+			[Bindable(event="msgTextChange")]
+			public function get msgText():String {
+				return _msgText;
+			}
+			
+			public function set msgText(value:String):void {
+				if (value == null) {
+					_msgText = "";
+				}else {
+					_msgText = value;
+				}
+				
+				dispatchEvent(new Event("msgTextChange"));
+				
+			}
+			
+			private var _inputIndex:int;
+			private var _inputText:String;
+			private var _dataProvider:ArrayCollection;
+			
+			private var _ac:AutoComplete;
+			
+			[Bindable(event="autoCompleteChange")]
+			public function get autoComplete():AutoComplete {
+				return _ac;
+			}
+			
+			public function set autoComplete(value:AutoComplete):void {
+				_ac = value;
+				dispatchEvent(new Event("autoCompleteChange"));
+			}
+			
+			private function dpChangeHandler(e:Event):void {
+				inputList.selectedIndex = 0;
+			}
+			
+			[Bindable(event="indexChange")]
+			public function get inputIndex():int {
+				return _inputIndex;
+			}
+			
+			public function set inputIndex(index:int):void {
+				_inputIndex = index;
+				this.title = "Input " + (_inputIndex + 1) + " is not valid";
+				dispatchEvent(new Event("indexChange"));
+			}
+			
+			[Bindable(event="inputChange")]
+			public function get inputText():String {
+				return _inputText;
+			}
+			
+			public function set inputText(input:String):void {
+				_inputText = input;
+				textInput.text = _inputText;
+				dispatchEvent(new Event("inputChange"));
+			}
+			
+			[Bindable(event="dpChange")]
+			public function get dataProvider():ArrayCollection {
+				callLater(selectFirstElement);
+				return _dataProvider;
+			}
+			
+			public function set dataProvider(value:ArrayCollection):void {
+				var dp:ArrayCollection = new ArrayCollection(value.source);
+				for (var i:int = dp.length - 1; i >= 0; i--) {
+					if (dp.getItemAt(i).label.toString() == GlobalString.SEARCHMORE ||
+							dp.getItemAt(i).label.toString() == GlobalString.SEPARATOR){
+						dp.removeItemAt(i);
+					}
+				}
+				_dataProvider = value;
+				callLater(selectFirstElement);
+				dispatchEvent(new Event("dpChange"));
+			}
+			
+			public function newKeyDownHandler(event:KeyboardEvent):void {
+				if (event.keyCode == Keyboard.ENTER) {
+					ok();
+				}
+			}
+			
+			public function inputChanged(event:Event):void {
+				if (textInput.text.length > 1) {
+					offsetIndex = 0;
+					var results:ArrayCollection = new ArrayCollection();
+					var searching:Object = new Object();
+					searching.label = GlobalString.SEARCHING;
+					results.addItem(searching);
+					dataProvider = results;
+					ConnectionModel.getInstance().sparqlConfig.lookUp.run(textInput.text, this, offset, offset * offsetIndex);
+				}
+			}
+			
+			private function selectFirstElement():void {
+				inputList.selectedIndex = 0;
+			}
+			
+			public function ok():void {
+				
+				okObject(inputList.selectedItem);
+				
+			}
+			
+			private function okObject(selectedItem:Object):void {
+				if (autoComplete == null) {
+					if (selectedItem && selectedItem.hasOwnProperty("uris")) {
+						dispatchEvent(new InputSelectionEvent(InputSelectionEvent.INPUTSELECTION, _inputIndex, selectedItem));
+						PopUpManager.removePopUp(this);
+					}else {
+						Alert.show("You have to select a valid resource from list", "No valid resource selected!", Alert.OK);
+					}
+				}else {
+					if (selectedItem && selectedItem.hasOwnProperty("uris")) {
+						autoComplete.selectedItem = selectedItem;
+						autoComplete.validateNow();
+						PopUpManager.removePopUp(this);
+					}else {
+						Alert.show("You have to select a valid resource from list", "No valid resource selected!", Alert.OK);
+					}
+				}
+			}
+			
+			public function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+			private var tooltipInstance:IToolTip;
+			
+			private function showTooltip(e:ListEvent):void {
+				var ob:Object = (inputList.dataProvider)[e.rowIndex];
+				if (ob.hasOwnProperty("uris")) {
+					var pos:Point = inputList.contentToGlobal(new Point(x, y));
+					tooltipInstance = ToolTipManager.createToolTip(arrayToString(ob.uris), pos.x - x + inputList.width, pos.y - y + (22 * (e.rowIndex - inputList.verticalScrollPosition)));
+				}
+			}
+			
+			private function destroyTooltip(e:ListEvent):void {
+				if (tooltipInstance) {
+					try {
+						ToolTipManager.destroyToolTip(tooltipInstance);
+					}catch (e:ArgumentError) {
+						trace(e);
+					}
+				}
+			}
+			
+			private function arrayToString(arr:Array):String {
+				var output:String = "";
+				for each(var entry:String in arr) {
+					output += entry + "\n";
+				}
+				return output;
+			}
+			
+			private function directInput():void {
+				var direct:DirectInput = PopUpManager.createPopUp(this, DirectInput, true) as DirectInput;
+				direct.addEventListener("DirectInputResult", handleDirectInput);
+			}
+			
+			private function handleDirectInput(event:ResultEvent):void {
+				okObject(event.result);
+			}
+			
+			protected function offsetFirstHandler():void {
+				offsetIndex = 0;
+			}
+			
+			protected function offsetPreviousHandler():void {
+				offsetIndex = offsetIndex - 1;
+			}
+			
+			protected function offsetNextHandler():void {
+				offsetIndex = offsetIndex + 1;
+			}
+			
+			protected function offsetInputHandler():void {
+				try {
+					var offset:int = new int(offsetInput.text);
+					offsetIndex = offset;
+				}catch (error:Error) {
+					trace(error);
+				}
+			}
+			
+		]]>
+	</mx:Script>
+	
+	
+	<mx:VBox width="100%" height="100%">
+		<utils:DynamicTextArea id="textArea" text="{msgText}" width="100%" wordWrap="true" editable="false" selectable="false" borderStyle="none"/>
+		
+		<mx:TextInput id="textInput" width="100%" change="{inputChanged(event);}" keyDown="{newKeyDownHandler(event);}" />
+		
+		<mx:VDividedBox width="100%" height="100%">
+			<mx:List id="inputList" width="100%" height="100%" wordWrap="true" variableRowHeight="true"
+				dataProvider="{dataProvider}" doubleClickEnabled="true" itemDoubleClick="{ok();}" 
+				itemRenderer="popup.InputSelectionListRenderer" />
+				<!-- from inputList   itemRollOver="showTooltip(event)" itemRollOut="destroyTooltip(event)"-->
+		</mx:VDividedBox>
+		
+		<mx:HBox width="100%" >
+			<mx:Button id="directButton" label="直接输入" click="directInput();" height="20" paddingLeft="6" paddingRight="6"/>
+			<mx:Spacer width="100%" />
+			<mx:Button id="offsetFirst" label="|&lt;&lt;" click="offsetFirstHandler()" height="20" width="28" paddingLeft="0" paddingRight="0"
+				toolTip="第0页" />
+			<mx:Button id="offsetPrevious" label="&lt;" click="offsetPreviousHandler()" height="20" width="34" paddingLeft="0" paddingRight="0"
+				toolTip="上一页" />
+			<mx:TextInput id="offsetInput" text="{offsetIndex}" height="20" width="28" change="offsetInputHandler()" />
+			<mx:Button id="offsetNext" label="&gt;" click="offsetNextHandler()" height="20" width="28" paddingLeft="0" paddingRight="0"
+				toolTip="下一页" />
+		</mx:HBox>
+		
+		<mx:HBox horizontalAlign="right" width="100%">
+			<mx:Button id="okButton" label="选择" click="{ok();}" height="20" paddingLeft="6" paddingRight="6"/>
+			<mx:Button id="cancelButton" label="取消" click="{cancel();}" height="20" paddingLeft="6" paddingRight="6"/>
+		</mx:HBox>
+	</mx:VBox>
+</mx:TitleWindow>

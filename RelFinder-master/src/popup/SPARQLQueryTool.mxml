@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+Copyright (C) 2009 Philipp Heim, Sebastian Hellmann, Jens Lehmann, Steffen Lohmann and Timo Stegemann
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, see <http://www.gnu.org/licenses/>.	
+-->
+
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"  width="768" height="512" borderAlpha="1.0" creationComplete="{init();}" title="针对已选择的SPARQL端点进行Query查询">
+	<mx:Script>
+		<![CDATA[
+			import connection.SPARQLConnection;
+			import connection.SPARQLResultEvent;
+			import mx.managers.PopUpManager;
+			
+			private var sparqlConnection:SPARQLConnection;
+			
+			private function init():void {
+				
+				sparqlConnection = new SPARQLConnection();
+				
+				focusManager.setFocus(textInput);
+				PopUpManager.centerPopUp(this);
+				setStyle("borderColor", getStyle("themeColor"));
+			}
+			
+			public function sparqlResultHandler(event:SPARQLResultEvent):void {
+				textOutput.text = new XML(event.result.toString());
+			}
+			
+			public function send():void {
+				sparqlConnection.executeSparqlQuery(null, textInput.text, sparqlResultHandler, "XML");
+			}
+			
+			public function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>
+	
+	
+	<mx:VDividedBox width="100%" height="100%">
+		
+		<mx:TextArea id="textInput" width="100%" height="100%" wordWrap="true"/>
+		
+		<mx:VBox width="100%" height="100%">
+			<mx:TextArea id="textOutput" width="100%" height="100%" wordWrap="true"/>
+			
+			<mx:HBox horizontalAlign="right" width="100%">
+				<mx:Button id="sendButton" label="发送" click="{send();}" height="20" paddingLeft="6" paddingRight="6" />
+				<mx:Button id="close" label="关闭" click="{cancel();}" height="20" paddingLeft="6" paddingRight="6" />
+			</mx:HBox>
+		</mx:VBox>
+	</mx:VDividedBox>
+</mx:TitleWindow>

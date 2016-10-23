@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:local="*"
+	xmlns:utils="utils.*"
+	paddingBottom="2" paddingTop="2" paddingRight="2" paddingLeft="2" 
+	width="{findRelationPanel.width}" height="100%" 
+	
+	visible="{selectedElement != null}" initialize="init()"
+	horizontalScrollPolicy="off" verticalScrollPolicy="on"
+	>
+	
+	<!-- resize="{imageView.calcIdealImageSize(height); }"-->
+		
+	<mx:Script>
+		<![CDATA[
+			import components.ButtonBarPanel;
+			import flash.display.DisplayObject;
+			import flash.events.Event;
+			import flash.xml.XMLDocument;
+			import global.Languages;
+			import graphElements.Element;
+			import mx.containers.Panel;
+			import mx.controls.TextArea;
+			import mx.core.Container;
+			
+			private function init():void {
+				Languages.getInstance().addEventListener("eventSelectedLanguageChanged", selectedLanguageChangedHandler);
+				Languages.getInstance().addEventListener("eventLangsChanged", selectedLanguageChangedHandler);
+			}
+			
+			private function selectedLanguageChangedHandler(event:Event):void {
+				langCombo.selectedIndex = Languages.getInstance().selectedLanguageIndex;
+			}
+			
+			private var _selectedElement:Element = null;
+			
+			[Bindable]
+			public function get selectedElement():Element {
+				return _selectedElement;
+			}
+			
+			public function set selectedElement(value:Element):void {
+				
+				if (value == null) {
+					infoVBox.height = 0;
+					loadingVBox.height = 0;
+					visible = false;
+					infoForm.visible = false;
+					labelBox.visible = false;
+					return;
+				}
+				
+				visible = true;
+				infoForm.visible = true;
+				labelBox.visible = true;
+				
+				_selectedElement = value;
+				
+				_selectedElement.addEventListener("isLoadingChange", isLoadingChangeHandler);
+					
+				if (_selectedElement.isLoading) {
+					infoVBox.height = 0;
+					loadingVBox.percentHeight = 100;
+					la.startRotation();
+				}else {
+					infoVBox.percentHeight = 100;
+					loadingVBox.height = 0;
+					la.stopRotation();
+				}
+				
+				dispatchEvent(new Event("selectedElementChange"));
+			}
+			
+			private function isLoadingChangeHandler(event:Event):void {
+					
+				if (_selectedElement == null) {
+					infoVBox.height = 0;
+					loadingVBox.height = 0;
+					visible = false;
+					infoForm.visible = false;
+					labelBox.visible = false;
+					return;
+				}
+				
+				visible = true;
+				infoForm.visible = true;
+				labelBox.visible = true;
+				
+				if (_selectedElement.isLoading) {
+					infoVBox.height = 0;
+					loadingVBox.percentHeight = 100;
+					la.startRotation();
+				}else {
+					infoVBox.percentHeight = 100;
+					loadingVBox.height = 0;
+					la.stopRotation();
+				}
+			}
+			
+			private function openWebsite(evt:TextEvent):void {
+				if (evt.text..search("http://") == 0) {
+					var newLink:URLRequest = new URLRequest(evt.text);
+					navigateToURL(newLink,"_blank");
+				}
+			}
+			
+			private function changeLang():void {
+				Languages.getInstance().selectedLanguage = langCombo.selectedItem.toString();
+			}
+			
+			
+			private var _findRelationPanel:Container = new Container();
+			
+			[Bindable]
+			public function get findRelationPanel():Container {
+				return _findRelationPanel;
+			}
+			
+			public function set findRelationPanel(value:Container):void {
+				_findRelationPanel = value;
+				dispatchEvent(new Event("findRelationPanelChange"));
+			}
+			
+			public function htmlUnescape(str:String):String {
+				var output:String;
+				
+				try {
+					
+					output = new XMLDocument(str).firstChild.nodeValue;
+					output = output.split("&ndash;").join("&#8211;");
+					
+				}catch (e:Error) {
+					output = str.split("&ndash;").join("&#8211;");
+				}
+				
+				
+				return output;
+				
+				//http://de.selfhtml.org/html/referenz/zeichen.htm
+			}
+			
+			[Bindable(event="selectedElementChange")]
+			private function childrenVisible():Boolean {
+				trace("visible", selectedElement != null && selectedElement.resourceURI != "" && selectedElement.resourceURI != null);
+				return selectedElement && selectedElement.resourceURI != "" && selectedElement.resourceURI != null ;
+			}
+				
+			
+			
+		]]>
+	</mx:Script>
+	
+	<mx:HBox id="labelBox">
+		<mx:Label truncateToFit="true" width="{findRelationPanel.width - 24 - langCombo.width - 8}" fontWeight="bold" fontSize="15" text="{selectedElement.rdfLabel}" /> <!--infobox的标题-->
+		<mx:ComboBox id="langCombo" dataProvider="{Languages.getInstance().asDataProvider}" width="60" close="{changeLang();}" />
+	</mx:HBox>
+	
+	<mx:Form id="infoForm" width="100%" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0" horizontalGap="0" verticalGap="0" indicatorGap="4">
+		<mx:FormItem label="更多信息：" width="100%" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0" horizontalGap="0" verticalGap="0">
+			<mx:VBox paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0" horizontalGap="0" verticalGap="0">
+				<mx:Label id="resourceLink" truncateToFit="true"  width="{findRelationPanel.width - 100}" htmlText="{selectedElement.uriLink}" toolTip="{selectedElement.resourceURI}" selectable="true" link="openWebsite(event);"  />
+				<local:InfoLinkBox dataProvider="{selectedElement.pages}" width="{findRelationPanel.width - 100 - 5}" />
+			</mx:VBox>
+		</mx:FormItem>
+	</mx:Form>
+	
+	<mx:VBox id="infoVBox" paddingBottom="0" paddingTop="0" paddingRight="0" paddingLeft="0" width="100%" height="100%" >
+		<local:ImageView id="imageView" width="{findRelationPanel.width - 24}" image_path="{selectedElement.imageURL}" />
+		<utils:DynamicTextArea  id="abstarctText" wordWrap="true" editable="false" borderStyle="none" width="100%"
+				visible="{selectedElement.abstract != 'no abstract available'}"
+				htmlText="{htmlUnescape(selectedElement.abstract)}" verticalScrollPolicy="off" horizontalScrollPolicy="off" />
+	</mx:VBox>
+	
+	<mx:VBox id="loadingVBox" paddingBottom="0" paddingTop="0" paddingRight="0" paddingLeft="0" width="100%" height="100%"
+		visible="{selectedElement.isLoading}" horizontalAlign="center" verticalAlign="center">
+		<local:LoadingAnimation id="la" circleRadius="12" dotSize="4" numberOfDots="8"/>
+	</mx:VBox>
+	
+</mx:VBox>
