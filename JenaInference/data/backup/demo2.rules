@@ -1,0 +1,1 @@
+[r1: (?a eg:know ?b) (?b eg:know ?c) -> (?a eg:know ?c)]

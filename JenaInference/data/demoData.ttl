@@ -1,0 +1,10 @@
+@prefix :      <http://jena.hpl.hp.com/demo#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix demo:  <http://jena.hpl.hp.com/demo#> .
+
+demo:c  demo:p  demo:a .
+
+demo:b  demo:p  demo:d .
+
+demo:a  demo:p  demo:b .

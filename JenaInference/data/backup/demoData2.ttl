@@ -1,0 +1,5 @@
+@prefix eg: <test1:test2:test3/>
+
+eg:a eg:know eg:b .
+eg:a eg:know eg:d .
+eg:b eg:know eg:c .
